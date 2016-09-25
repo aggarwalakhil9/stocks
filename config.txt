@@ -1,0 +1,29 @@
+input{
+    file {
+        path => "/Users/akhilaggarwal/Documents/Development/elastic/stockDetails.txt"
+	type => "stockDetail"
+    }
+}
+
+filter{
+    csv {
+        columns => ["name", "date", "time", "price", "open", "volume", "changePercent", "change"]
+        separator => ","
+    }
+    mutate {
+    	add_field => {
+		"timestamp" => "%{date} %{time}"
+    	}
+    }
+    date {
+ 	 match => [ "timestamp", "MM/dd/YYYY KK:mmaa" ]
+	 remove_field => [ "timestamp" ] 
+    }
+}
+
+output{
+    elasticsearch {
+        hosts => ["localhost:9200"]
+	index => "stocks-%{+YYYY.MM.dd}"
+    }    
+}
